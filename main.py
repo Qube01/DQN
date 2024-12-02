@@ -28,5 +28,5 @@ def run():
         next_state, _, done, _, _ = env.step(action)
         fstate = next_state
 
-#train()
-run()
+train()
+#run()
