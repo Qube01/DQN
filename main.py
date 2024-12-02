@@ -1,19 +1,32 @@
 import gymnasium as gym
 import dqn as dqn
+import pickle as pkl
 
 env_text = "LunarLander-v3"
-env = gym.make(env_text, continuous=False, render_mode="human")
 
-dqn = dqn.dqn(env, theta_size=9)
-dqn.train(episodes=1000, episode_duration=1000)
 
-# # Run the environment
-# # env.reset()
-# # done = False
+def train():
+    env = gym.make(env_text, continuous=False, render_mode="rgb_array")
+    DQN = dqn.dqn(env, state_size=8, learning_rate=0.01)
+    DQN.train(episodes=100, 
+              episode_duration=500, 
+              epsilon=(lambda x: 1 - (x / 1000)))
 
-# # while not done:
-# #     env.render()
-# #     action = env.action_space.sample()
-# #     _, _, done, _, _ = env.step(action)  
+def run():
+    env = gym.make(env_text, continuous=False, render_mode="human")
+    with open("trained_model.pkl", "rb") as file:
+        Q = pkl.load(file)
+        DQN = dqn.dqn(env, state_size=8, learning_rate=0.01, Q=Q)
+    
+    state, _ = env.reset()
+    fstate = state
+    done = False
 
-env.close()
+    while not done:
+        env.render()
+        action = DQN.Q.get_best_action(fstate, DQN.action_space)
+        next_state, _, done, _, _ = env.step(action)
+        fstate = next_state
+
+#train()
+run()
