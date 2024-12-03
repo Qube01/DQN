@@ -10,7 +10,7 @@ def train():
     DQN = dqn.dqn(env, state_size=8, learning_rate=0.1)
     DQN.train(episodes=100, 
               episode_duration=500, 
-              epsilon=(lambda x: 0))#1 - (x / 1000)))
+              epsilon=(lambda x: 0.1))#1 - (x / 1000)))
 
 def run():
     env = gym.make(env_text, continuous=False, render_mode="human")

@@ -9,7 +9,7 @@ class ActionValueFunction:
             tf.keras.layers.Dense(64, activation='relu'),
             tf.keras.layers.Dense(1, activation=None)
         ])
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        self.optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
 
     def get_qvalue(self, fstate, action):
         fstate = tf.convert_to_tensor(fstate, dtype=tf.float32)
