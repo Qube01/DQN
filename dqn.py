@@ -24,6 +24,7 @@ class dqn:
             done = False
             loss_values = []
 
+            total_reward=0
             for t in range(episode_duration):
                 if done:
                     break
@@ -35,6 +36,8 @@ class dqn:
 
                 next_state, reward, done, _, _ = self.env.step(at)
                 next_fstate = feature_representation(next_state)
+
+                total_reward+=reward
 
                 D.append((fstate, at, reward, next_fstate, done))
                 
@@ -55,6 +58,7 @@ class dqn:
 
                 fstate = next_fstate
 
+            print(f"Episode {episode}: Total reward = {total_reward}")
             print(f"Episode {episode}: Average loss = {np.mean(loss_values)}")
         
         with open('trained_model.pkl', 'wb') as f:
