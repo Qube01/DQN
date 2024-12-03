@@ -7,10 +7,10 @@ env_text = "LunarLander-v3"
 
 def train():
     env = gym.make(env_text, continuous=False, render_mode="rgb_array")
-    DQN = dqn.dqn(env, state_size=8, learning_rate=0.01)
+    DQN = dqn.dqn(env, state_size=8, learning_rate=0.1)
     DQN.train(episodes=100, 
               episode_duration=500, 
-              epsilon=(lambda x: 1 - (x / 1000)))
+              epsilon=(lambda x: 0))#1 - (x / 1000)))
 
 def run():
     env = gym.make(env_text, continuous=False, render_mode="human")
