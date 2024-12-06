@@ -5,25 +5,17 @@ from collections import deque
 import ActionValueFunction as avf
 
 class dqn:
-    def __init__(self, env, state_size, learning_rate=0.01, Q=None):
+    def __init__(self, env, state_size, learning_rate=0.01):
         self.env = env
         self.action_space = list(range(env.action_space.n))
 
-        if Q is not None:
-            self.Q = Q
-        else:
-            self.Q = avf.ActionValueFunction(state_size, self.action_space, learning_rate)
-
-        import pdb; pdb.set_trace()
-        print("world")
+        self.Q = avf.ActionValueFunction(state_size, self.action_space, learning_rate)
 
 
     def train(self, episodes=1000, episode_duration=1000, epsilon=(lambda x: 0.1), gamma=0.99, feature_representation=(lambda x: x)):
         D = deque(maxlen=10000)
         save_dir = 'model_torch'
         os.makedirs(save_dir, exist_ok=True)
-
-        import pdb; pdb.set_trace()
 
         for episode in range(episodes):
             state, _ = self.env.reset()
@@ -34,9 +26,6 @@ class dqn:
 
             total_reward = 0
             for t in range(episode_duration):
-
-                import pdb; pdb.set_trace()
-
 
                 if done:
                     break
@@ -71,7 +60,7 @@ class dqn:
 
             if (episode + 1) % 10 == 0:
                 try:
-                    torch.save(self.Q.model.state_dict(), os.path.join(save_dir, f'trained_model_episode_{episode + 1}.pth'))
+                    torch.save(self.Q.model.state_dict(), os.path.join(save_dir, f'last_trained_model.pth'))
                 except Exception as e:
                     print(f"Error saving model at episode {episode + 1}: {e}")
 

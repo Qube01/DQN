@@ -1,48 +1,49 @@
-import numpy as np
-import tensorflow as tf
+import torch
+import torch.nn as nn
+import torch.optim as optim
 
-class ActionValueFunction:
+class ActionValueFunction(nn.Module):
     def __init__(self, state_size, action_space, learning_rate=0.01):
+        super().__init__()
+        self.model = nn.Sequential(
+            nn.Linear(state_size, 64),
+            nn.ReLU(),
+            nn.Linear(64, 64),
+            nn.ReLU(),
+            nn.Linear(64, len(action_space))
+        )
 
-        self.model = tf.keras.Sequential([
-            tf.keras.layers.InputLayer(shape=(state_size,)),  # Input is the state vector
-            tf.keras.layers.Dense(64, activation='relu'),
-            tf.keras.layers.Dense(64, activation='relu'),
-            tf.keras.layers.Dense(len(action_space), activation=None)  # Output is a vector of Q-values for each action
-        ])
-        self.optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=learning_rate)
+        self.loss_fn = nn.MSELoss()
 
     def get_qvalue(self, fstate, action):
-        fstate = tf.convert_to_tensor(fstate, dtype=tf.float32)
-        qvalues = self.model(fstate[None, :])
-        print(qvalues)
-        return qvalues[0, action]
+        fstate = torch.tensor(fstate, dtype=torch.float32)
+        qvalues = self.model(fstate)
+        return qvalues[action]
 
     def get_best_action(self, fstate, action_space):
-        fstate = tf.convert_to_tensor(fstate, dtype=tf.float32)
-        qvalues = self.model(fstate[None, :])
-        #print("from get_best_action : " + str(qvalues))
-        best_action_index = tf.argmax(qvalues[0])
-        return action_space[best_action_index.numpy()]
+        fstate = torch.tensor(fstate, dtype=torch.float32)
+        qvalues = self.model(fstate)
+        best_action_index = torch.argmax(qvalues).item()
+        return action_space[best_action_index]
 
     def get_best_qvalue(self, fstate, action_space):
-        fstate = tf.convert_to_tensor(fstate, dtype=tf.float32)
-        qvalues = self.model(fstate[None, :])
-        #print("from get_best_qvalue : " + str(qvalues))
-        best_qvalue = tf.reduce_max(qvalues[0])
+        fstate = torch.tensor(fstate, dtype=torch.float32)
+        qvalues = self.model(fstate)
+        best_qvalue = torch.max(qvalues).item()
         return best_qvalue
 
     def loss(self, targets, fstates, actions):
-        fstates = tf.convert_to_tensor(fstates, dtype=tf.float32)
+        fstates = torch.tensor(fstates, dtype=torch.float32)
         qvalues = self.model(fstates)
-        action_indices = tf.stack([tf.range(len(actions)), actions], axis=1)
-        qvalues = tf.gather_nd(qvalues, action_indices)
-        return tf.reduce_mean((targets - qvalues) ** 2)  # Mean squared error over the batch
+        qvalues = qvalues.gather(1, torch.tensor(actions).unsqueeze(1)).squeeze(1)
+        targets = torch.tensor(targets, dtype=torch.float32)
+        return self.loss_fn(qvalues, targets)
 
     def train_step(self, targets, fstates, actions):
-        with tf.GradientTape() as tape:
-            loss_value = self.loss(targets, fstates, actions)  # Compute loss
-        gradients = tape.gradient(loss_value, self.model.trainable_variables)  # Compute gradient
-        clipped_gradients = [tf.clip_by_value(grad, -1., 1.) for grad in gradients]  
-        self.optimizer.apply_gradients(zip(clipped_gradients, self.model.trainable_variables))  # Update model weights
-        return loss_value.numpy()
+        self.optimizer.zero_grad()
+        loss_value = self.loss(targets, fstates, actions)
+        loss_value.backward()
+        nn.utils.clip_grad_value_(self.model.parameters(), 1.0)
+        self.optimizer.step()
+        return loss_value.item()
