@@ -1,5 +1,6 @@
-import numpy as np
+import os
 import torch
+import numpy as np
 from collections import deque
 import ActionValueFunction as avf
 
@@ -15,6 +16,8 @@ class dqn:
 
     def train(self, episodes=1000, episode_duration=1000, epsilon=(lambda x: 0.1), gamma=0.99, feature_representation=(lambda x: x)):
         D = deque(maxlen=10000)
+        save_dir = 'model_torch'
+        os.makedirs(save_dir, exist_ok=True)
 
         for episode in range(episodes):
             state, _ = self.env.reset()
@@ -57,9 +60,15 @@ class dqn:
                 fstate = next_fstate
 
             if (episode + 1) % 10 == 0:
-                torch.save(self.Q.model.state_dict(), f'trained_model_episode_{episode + 1}.pth')
+                try:
+                    torch.save(self.Q.model.state_dict(), os.path.join(save_dir, f'trained_model_episode_{episode + 1}.pth'))
+                except Exception as e:
+                    print(f"Error saving model at episode {episode + 1}: {e}")
 
             print(f"Episode {episode}: Total reward = {total_reward}")
             print(f"Episode {episode}: Average loss = {np.mean(loss_values)}")
 
-        torch.save(self.Q.model.state_dict(), 'trained_model.pth')
+        try:
+            torch.save(self.Q.model.state_dict(), os.path.join(save_dir, 'trained_model.pth'))
+        except Exception as e:
+            print(f"Error saving final model: {e}")
