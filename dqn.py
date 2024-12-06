@@ -14,6 +14,10 @@ class dqn:
         else:
             self.Q = avf.ActionValueFunction(state_size, self.action_space, learning_rate)
 
+        import pdb; pdb.set_trace()
+        print("world")
+
+
     def train(self, episodes=1000, episode_duration=1000, epsilon=(lambda x: 0.1), gamma=0.99, feature_representation=(lambda x: x)):
         D = deque(maxlen=10000)
         save_dir = 'model_torch'
