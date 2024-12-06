@@ -1,8 +1,9 @@
 import numpy as np
 import tensorflow as tf
-import pickle as pkl
 from collections import deque
 import ActionValueFunction as avf
+
+
 
 class dqn:
     def __init__(self, env, state_size, learning_rate=0.01, Q=None):
@@ -13,14 +14,14 @@ class dqn:
             self.Q = Q
         else:
             self.Q = avf.ActionValueFunction(state_size, self.action_space, learning_rate)
-            
+
     def train(self, episodes=1000, episode_duration=1000, epsilon=(lambda x: 0.1), gamma=0.99, feature_representation=(lambda x: x)):
         D = deque(maxlen=10000)
 
         for episode in range(episodes):
             state, _ = self.env.reset()
             fstate = feature_representation(state)
-            
+
             done = False
             loss_values = []
 
@@ -34,13 +35,14 @@ class dqn:
                 else:
                     at = self.Q.get_best_action(fstate, self.action_space)
 
-                next_state, reward, done, _, _ = self.env.step(at)
+                next_state, reward, terminated, truncated, _ = self.env.step(at)
                 next_fstate = feature_representation(next_state)
 
                 total_reward+=reward
+                done = terminated or truncated
 
                 D.append((fstate, at, reward, next_fstate, done))
-                
+
                 if len(D) >= 32:
                     minibatch = np.random.choice(len(D), 32, replace=False)
                     fstates, actions, rewards, next_fstates, dones = zip(*[D[idx] for idx in minibatch])
@@ -58,8 +60,10 @@ class dqn:
 
                 fstate = next_fstate
 
+            if (episode + 1) % 10 == 0:
+              self.Q.model.save(f'trained_model_episode_{episode + 1}.keras')
+
             print(f"Episode {episode}: Total reward = {total_reward}")
             print(f"Episode {episode}: Average loss = {np.mean(loss_values)}")
-        
-        with open('trained_model.pkl', 'wb') as f:
-            pkl.dump(self.Q, f)
+
+        self.Q.model.save('trained_model.keras')
