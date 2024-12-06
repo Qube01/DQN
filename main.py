@@ -1,15 +1,14 @@
 import gymnasium as gym
-import tensorflow as tf
+import torch
 import ActionValueFunction as avf
 import dqn
 
 env_text = "LunarLander-v3"
 
-
 def train():
-    env = gym.make(env_text, continuous=False, render_mode="rgb_array")
+    env = gym.make(env_text, continuous=False, render_mode=None)
     DQN = dqn.dqn(env, state_size=8, learning_rate=0.001)
-    y=[2.5, 2.5, 10, 10, 7, 10, 1, 1]
+    y = [2.5, 2.5, 10, 10, 7, 10, 1, 1]
     DQN.train(episodes=1000,
               episode_duration=500,
               epsilon=(lambda x: max(1 - (x / 500), 0.1)),
@@ -17,10 +16,10 @@ def train():
 
 def run():
     env = gym.make(env_text, continuous=False, render_mode="human")
-    # Load the model weights instead of the entire object
     Q = avf.ActionValueFunction(state_size=8, action_space=list(range(env.action_space.n)))  # Create a new ActionValueFunction instance
-    Q.model = tf.keras.models.load_model('trained_model.keras')  # Load the saved weights
-    DQN = dqn(env, state_size=8, learning_rate=0.01, Q=Q)  # Create dqn with the loaded Q
+    Q.model.load_state_dict(torch.load('trained_model.pth'))  # Load the saved weights
+    Q.model.eval()  # Set the model to evaluation mode
+    DQN = dqn.dqn(env, state_size=8, learning_rate=0.01, Q=Q)  # Create dqn with the loaded Q
 
     state, _ = env.reset()
     fstate = state
@@ -33,4 +32,3 @@ def run():
         fstate = next_state
 
 train()
-#run()

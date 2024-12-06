@@ -1,9 +1,7 @@
 import numpy as np
-import tensorflow as tf
+import torch
 from collections import deque
 import ActionValueFunction as avf
-
-
 
 class dqn:
     def __init__(self, env, state_size, learning_rate=0.01, Q=None):
@@ -25,7 +23,7 @@ class dqn:
             done = False
             loss_values = []
 
-            total_reward=0
+            total_reward = 0
             for t in range(episode_duration):
                 if done:
                     break
@@ -38,7 +36,7 @@ class dqn:
                 next_state, reward, terminated, truncated, _ = self.env.step(at)
                 next_fstate = feature_representation(next_state)
 
-                total_reward+=reward
+                total_reward += reward
                 done = terminated or truncated
 
                 D.append((fstate, at, reward, next_fstate, done))
@@ -49,21 +47,19 @@ class dqn:
                     targets = []
                     for r_j, fs_next_j, done_j in zip(rewards, next_fstates, dones):
                         if done_j:
-                            targets.append(r_j)
+                            targets.append(float(r_j))
                         else:
-                            reward_tensor = tf.constant(r_j, dtype=tf.float32)
-                            gamma_tensor = tf.constant(gamma, dtype=tf.float32)
                             best_qvalue = self.Q.get_best_qvalue(fs_next_j, self.action_space)
-                            targets.append(reward_tensor + gamma_tensor * best_qvalue)
-                    targets = tf.convert_to_tensor(targets, dtype=tf.float32)
+                            targets.append(float(r_j) + gamma * float(best_qvalue))
+                    targets = torch.tensor(targets, dtype=torch.float32)
                     loss_values.append(self.Q.train_step(targets, fstates, actions))
 
                 fstate = next_fstate
 
             if (episode + 1) % 10 == 0:
-              self.Q.model.save(f'trained_model_episode_{episode + 1}.keras')
+                torch.save(self.Q.model.state_dict(), f'trained_model_episode_{episode + 1}.pth')
 
             print(f"Episode {episode}: Total reward = {total_reward}")
             print(f"Episode {episode}: Average loss = {np.mean(loss_values)}")
 
-        self.Q.model.save('trained_model.keras')
+        torch.save(self.Q.model.state_dict(), 'trained_model.pth')
