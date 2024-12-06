@@ -61,7 +61,7 @@ class dqn:
 
             if (episode + 1) % 10 == 0:
                 try:
-                    torch.save(self.Q.model.state_dict(), os.path.join(save_dir, f'trained_model_episode_{episode + 1}.pth'))
+                    torch.save(self.Q.state_dict(), os.path.join(save_dir, f'trained_model_episode_{episode + 1}.pth'))
                 except Exception as e:
                     print(f"Error saving model at episode {episode + 1}: {e}")
 
@@ -69,6 +69,6 @@ class dqn:
             print(f"Episode {episode}: Average loss = {np.mean(loss_values)}")
 
         try:
-            torch.save(self.Q.model.state_dict(), os.path.join(save_dir, 'trained_model.pth'))
+            torch.save(self.Q.state_dict(), os.path.join(save_dir, 'trained_model.pth'))
         except Exception as e:
             print(f"Error saving final model: {e}")
