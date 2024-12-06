@@ -19,6 +19,8 @@ class dqn:
         save_dir = 'model_torch'
         os.makedirs(save_dir, exist_ok=True)
 
+        import pdb; pdb.set_trace()
+
         for episode in range(episodes):
             state, _ = self.env.reset()
             fstate = feature_representation(state)
@@ -28,6 +30,10 @@ class dqn:
 
             total_reward = 0
             for t in range(episode_duration):
+
+                import pdb; pdb.set_trace()
+
+
                 if done:
                     break
 
@@ -61,7 +67,7 @@ class dqn:
 
             if (episode + 1) % 10 == 0:
                 try:
-                    torch.save(self.Q.state_dict(), os.path.join(save_dir, f'trained_model_episode_{episode + 1}.pth'))
+                    torch.save(self.Q.model.state_dict(), os.path.join(save_dir, f'trained_model_episode_{episode + 1}.pth'))
                 except Exception as e:
                     print(f"Error saving model at episode {episode + 1}: {e}")
 
@@ -69,6 +75,6 @@ class dqn:
             print(f"Episode {episode}: Average loss = {np.mean(loss_values)}")
 
         try:
-            torch.save(self.Q.state_dict(), os.path.join(save_dir, 'trained_model.pth'))
+            torch.save(self.Q.model.state_dict(), os.path.join(save_dir, 'trained_model.pth'))
         except Exception as e:
             print(f"Error saving final model: {e}")
