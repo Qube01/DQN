@@ -13,7 +13,7 @@ class dqn:
 
 
     def train(self, episodes=1000, episode_duration=1000, epsilon=(lambda x: 0.1), gamma=0.99, feature_representation=(lambda x: x)):
-        D = deque(maxlen=10000)
+        D = deque(maxlen=100000)
         save_dir = 'model_torch'
         os.makedirs(save_dir, exist_ok=True)
 

@@ -10,10 +10,12 @@ class ActionValueFunction(nn.Module):
             nn.ReLU(),
             nn.Linear(64, 64),
             nn.ReLU(),
+            # nn.Linear(64, 64),
+            # nn.ReLU(),
             nn.Linear(64, len(action_space))
         )
 
-        self.optimizer = optim.SGD(self.model.parameters(), lr=learning_rate)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
         self.loss_fn = nn.MSELoss()
 
     def get_qvalue(self, fstate, action):
