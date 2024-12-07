@@ -8,9 +8,9 @@ env_text = "LunarLander-v3"
 def train():
     env = gym.make(env_text, continuous=False, render_mode="human")
     DQN = dqn.dqn(env, state_size=8, learning_rate=0.001)
-    DQN.train(episodes=2000000,
+    DQN.train(episodes=2000,
               episode_duration=500,
-              epsilon=(lambda x: max(1 - (x / 2000000), 0.1)),
+              epsilon=(lambda x: max(1 - (x / 2000), 0.1)),
               feature_representation=(lambda x: x))
 
 def run():
