@@ -19,18 +19,23 @@ def run():
     env = gym.make(env_text, continuous=False, render_mode="human")
     # Load the model weights instead of the entire object
     Q = avf.ActionValueFunction(state_size=8, action_space=list(range(env.action_space.n)))  # Create a new ActionValueFunction instance
-    Q.model = tf.keras.models.load_model('trained_model.keras')  # Load the saved weights
-    DQN = dqn(env, state_size=8, learning_rate=0.01, Q=Q)  # Create dqn with the loaded Q
+    Q.model = tf.keras.models.load_model('model_tf/trained_model_episode_900.keras')  # Load the saved weights
+    DQN = dqn.dqn(env, state_size=8, learning_rate=0.01, Q=Q)  # Create dqn with the loaded Q
 
     state, _ = env.reset()
     fstate = state
     done = False
 
+    reward=0
+
     while not done:
         env.render()
         action = DQN.Q.get_best_action(fstate, DQN.action_space)
-        next_state, _, done, _, _ = env.step(action)
+        next_state, r, done, _, _ = env.step(action)
+        reward+=r
         fstate = next_state
 
-train()
-#run()
+    print(f"Total reward: {reward}")
+
+#train()
+run()
