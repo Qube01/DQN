@@ -16,10 +16,10 @@ def train():
 
 def run():
     env = gym.make(env_text, continuous=False, render_mode="human")
-    # Load the model weights instead of the entire object
-    Q = avf.ActionValueFunction(state_size=8, action_space=list(range(env.action_space.n)))  # Create a new ActionValueFunction instance
-    Q.model = tf.keras.models.load_model('model_tf/trained_model_episode_900.keras')  # Load the saved weights
-    DQN = dqn.dqn(env, state_size=8, learning_rate=0.01, Q=Q)  # Create dqn with the loaded Q
+
+    Q = avf.ActionValueFunction(state_size=8, action_space=list(range(env.action_space.n)))  
+    Q.model = tf.keras.models.load_model('model_tf/trained_model_episode_900.keras')  
+    DQN = dqn.dqn(env, state_size=8, learning_rate=0.01, Q=Q) 
 
     state, _ = env.reset()
     fstate = state
