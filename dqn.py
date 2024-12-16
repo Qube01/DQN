@@ -41,10 +41,18 @@ class dqn:
                 total_reward += reward
                 done = terminated or truncated
 
-                D.append((fstate, at, reward, next_fstate, done))
 
-                if len(D) >= 32:
-                    minibatch = np.random.choice(len(D), 32, replace=False)
+                #appending to the deque at a random index if the deque is full
+                if len(D) < D.maxlen:
+                    D.append((fstate, at, reward, next_fstate, done))
+                else:
+                    idx = np.random.randint(0, len(D))
+                    D[idx] = (fstate, at, reward, next_fstate, done)
+
+                minibatch_size = 32
+
+                if len(D) >= minibatch_size:
+                    minibatch = np.random.choice(len(D), minibatch_size, replace=False)
                     fstates, actions, rewards, next_fstates, dones = zip(*[D[idx] for idx in minibatch])
                     targets = []
                     for r_j, fs_next_j, done_j in zip(rewards, next_fstates, dones):
@@ -64,8 +72,16 @@ class dqn:
                 except Exception as e:
                     print(f"Error saving model at episode {episode + 1}: {e}")
 
-            print(f"Episode {episode}: Total reward = {total_reward}")
-            print(f"Episode {episode}: Average loss = {np.mean(loss_values)}")
+
+            print(f"\n Episode {episode}: Average loss = {np.mean(loss_values)}")
+
+            if total_reward >= 0:
+                print(f"\033[92mEpisode {episode}: Total reward = {total_reward}\033[0m")
+            else:
+                print(f"\033[91mEpisode {episode}: Total reward = {total_reward}\033[0m")
+
+            print()
+            print(f"Deque size: {len(D)}")
 
         try:
             torch.save(self.Q.model.state_dict(), os.path.join(save_dir, 'trained_model.pth'))

@@ -2,6 +2,15 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+class ClippedOutput(nn.Module):
+    def __init__(self, min_val, max_val):
+        super().__init__()
+        self.min_val = min_val
+        self.max_val = max_val
+
+    def forward(self, x):
+        return torch.clamp(x, self.min_val, self.max_val)
+
 class ActionValueFunction(nn.Module):
     def __init__(self, state_size, action_space, learning_rate=0.01):
         super().__init__()
@@ -10,9 +19,10 @@ class ActionValueFunction(nn.Module):
             nn.ReLU(),
             nn.Linear(64, 64),
             nn.ReLU(),
-            # nn.Linear(64, 64),
+            # nn.Linear(64, 32),
             # nn.ReLU(),
-            nn.Linear(64, len(action_space))
+            nn.Linear(64, len(action_space)),
+            #ClippedOutput(-500, 500)  # Add the clipping layer here
         )
 
         self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
