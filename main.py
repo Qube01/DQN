@@ -17,7 +17,7 @@ def run():
     env = gym.make(env_text, continuous=False, render_mode="human")
 
     DQN = dqn.dqn(env, state_size=8)  # Create dqn with the loaded Q
-    DQN.Q.model.load_state_dict(torch.load('model_torch/3/last_trained_model.pth'))  # Load the saved weights
+    DQN.Q.model.load_state_dict(torch.load('model_torch/2/last_trained_model.pth'))  # Load the saved weights
     DQN.Q.model.eval()
     state, _ = env.reset()
     fstate = state

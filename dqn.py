@@ -40,14 +40,8 @@ class dqn:
 
                 total_reward += reward
                 done = terminated or truncated
-
-
-                #appending to the deque at a random index if the deque is full
-                if len(D) < D.maxlen:
-                    D.append((fstate, at, reward, next_fstate, done))
-                else:
-                    idx = np.random.randint(0, len(D))
-                    D[idx] = (fstate, at, reward, next_fstate, done)
+                
+                D.append((fstate, at, reward, next_fstate, done))
 
                 minibatch_size = 32
 
